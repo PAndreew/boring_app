@@ -3,8 +3,8 @@ from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Boolean, F
 from sqlalchemy.orm import relationship
 
 
-class FoodModel(Base):
-    __tablename__ = 'foods'
+class DrinkModel(Base):
+    __tablename__ = 'drinks'
     id = Column(Integer, primary_key=True)
     title = Column(String(20))
     desc = Column(String(255))
@@ -13,10 +13,11 @@ class FoodModel(Base):
     prepare_time = Column(Integer)
     size = Column(String(1))
     is_liked = Column(Boolean)
+    stock_status = Column(Boolean, default=True)  # New field
     nightspot_id = Column(Integer, ForeignKey("nightspots.id"))
 
-    nightspot = relationship('NightspotModel', back_populates='foods')
-    cart_items = relationship('CartItemModel', back_populates='food')
+    nightspot = relationship('NightspotModel', back_populates='drinks')
+    cart_items = relationship('CartItemModel', back_populates='drinks')
 
 
 class NightspotModel(Base):
@@ -31,7 +32,8 @@ class NightspotModel(Base):
     open_time = Column(String(20))
     close_time = Column(String(20))
 
-    foods = relationship('FoodModel', back_populates='nightspot')
+    foods = relationship('DrinkModel', back_populates='nightspot')
+    employees = relationship('EmployeeModel', back_populates='nightspot')
 
 
 class CartModel(Base):
@@ -77,3 +79,21 @@ class CardModel(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
 
     user = relationship('UserModel', back_populates='cards')
+
+class EmployeeModel(Base):
+    __tablename__ = 'employees'
+    id = Column(Integer, primary_key=True)
+
+    # Basic Employee Information
+    name = Column(String(50))
+    role = Column(String(20))  # e.g., 'bartender', 'admin'
+    email = Column(String(50))  # Optional: For communication or login
+    
+    # Link to the Nightspot they work at
+    nightspot_id = Column(Integer, ForeignKey('nightspots.id'))
+    
+    # Indicates if the employee is currently active or not
+    is_active = Column(Boolean, default=True)
+
+    # Relationship with the NightspotModel
+    nightspot = relationship('NightspotModel', back_populates='employees')
