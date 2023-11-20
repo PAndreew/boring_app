@@ -3,22 +3,6 @@ from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Boolean, F
 from sqlalchemy.orm import relationship
 
 
-class DrinkModel(Base):
-    __tablename__ = 'drinks'
-    id = Column(Integer, primary_key=True)
-    title = Column(String(20))
-    desc = Column(String(255))
-    price = Column(Float(2))
-    cover = Column(String)
-    prepare_time = Column(Integer)
-    size = Column(String(1))
-    is_liked = Column(Boolean)
-    stock_status = Column(Boolean, default=True)  # New field
-    nightspot_id = Column(Integer, ForeignKey("nightspots.id"))
-
-    nightspot = relationship('NightspotModel', back_populates='drinks')
-    cart_items = relationship('CartItemModel', back_populates='drinks')
-
 
 class NightspotModel(Base):
     __tablename__ = 'nightspots'
@@ -32,8 +16,8 @@ class NightspotModel(Base):
     open_time = Column(String(20))
     close_time = Column(String(20))
 
-    foods = relationship('DrinkModel', back_populates='nightspot')
     employees = relationship('EmployeeModel', back_populates='nightspot')
+    menus = relationship('MenuModel', back_populates='nightspot')
 
 
 class CartModel(Base):
@@ -52,12 +36,13 @@ class CartItemModel(Base):
     food_id = Column(Integer, ForeignKey("foods.id"))
 
     cart = relationship('CartModel', back_populates='items')
-    food = relationship('FoodModel', back_populates='cart_items')
+    drink = relationship('DrinkModel', back_populates='cart_items')
 
 
 class UserModel(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
+    stripe_customer_id = Column(String)  # Store Stripe customer ID
     username = Column(String)
     email = Column(String)
     profile = Column(String)
@@ -67,18 +52,7 @@ class UserModel(Base):
     cart_id = Column(Integer, ForeignKey("carts.id"))
 
     cart = relationship('CartModel', back_populates='user')
-    cards = relationship('CardModel', back_populates='user')
 
-
-class CardModel(Base):
-    __tablename__ = 'cards'
-    id = Column(Integer, primary_key=True)
-    card_serial = Column(String)
-    owner = Column(String)
-    expire_date = Column(String)
-    user_id = Column(Integer, ForeignKey("users.id"))
-
-    user = relationship('UserModel', back_populates='cards')
 
 class EmployeeModel(Base):
     __tablename__ = 'employees'
@@ -97,3 +71,16 @@ class EmployeeModel(Base):
 
     # Relationship with the NightspotModel
     nightspot = relationship('NightspotModel', back_populates='employees')
+
+
+class MenuModel(Base):
+    __tablename__ = 'menus'
+    id = Column(Integer, primary_key=True)
+    title = Column(String(50))  # Title of the menu
+    description = Column(String(255))  # Description of the menu
+    nightspot_id = Column(Integer, ForeignKey('nightspots.id'))  # Link to the nightspot
+
+    nightspot = relationship('NightspotModel', back_populates='menus')
+    drinks = relationship('DrinkModel', back_populates='menu')
+
+
